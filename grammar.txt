@@ -1,16 +1,21 @@
-start: "-"
-| source _source_first [order]
+start: select | count
+
+count: "how many" _row_word ("are in" | "in") table_name conditions*
+|"how many" _row_word "does" table_name "have" conditions*
+
+select: "-"
+| _source_statement _source_first [order]
 | _request_statement _request_first [order]
 | conditions* conditions_first [order]
-| selected_columns*  _request_statement source conditions* [order]
+| selected_columns*  _request_statement _source_statement conditions* [order]
 
 _request_first: "-"
-| source selected_columns* conditions*
-| source conditions* selected_columns*
-| selected_columns* conditions* source
-| selected_columns* source conditions* 
-| conditions* source selected_columns*
-| conditions* selected_columns* source 
+| _source_statement selected_columns* conditions*
+| _source_statement conditions* selected_columns*
+| selected_columns* conditions* _source_statement
+| selected_columns* _source_statement conditions* 
+| conditions* _source_statement selected_columns*
+| conditions* selected_columns* _source_statement 
 
 _source_first: "-"
 | _request_statement selected_columns* conditions*
@@ -18,7 +23,7 @@ _source_first: "-"
 | selected_columns*  _request_statement conditions*
 
 conditions_first: "-"
-| _request_statement source selected_columns* 
+| _request_statement _source_statement selected_columns* 
 
 
 //order
@@ -28,22 +33,24 @@ direction: "ascending" -> asc | "descending" -> desc
 
 
 //request statement
-_request_statement: _verb_statement _row_word
-_row_word: "rows" | "entries" | "data" | "items" | "things" | "stuff" 
-_verb_statement: "give me" | "return" | "fetch" | "i want"
+_request_statement: _verb_statement [row_limit] _row_word
+_row_word: "row"["s"] | "entry" | "entries" | "data" | "item"["s"] 
+| "thing"["s"] | "stuff" 
+_verb_statement: "give me" | "return" | "fetch" | "i want" | "get"
+row_limit: NUMBER
 
 //selected columns
 selected_columns: ("with"|"with the") ("column"|"columns") _data [_and_statement _data]*
 
 
 //source
-source: _from_statement _data_base | "from the" _data_base "database" 
-_from_statement: "from the" | "from" | "from the database"
-_data_base: _data
+_source_statement: _from_statement table_name | "from the" table_name "table" 
+_from_statement: "from the" | "from" | "from the table" | "in"
+table_name: WORD
 
 //condition
 conditions: _where_statement conditional [_and_statement conditional]+
-_where_statement: "wherin" | "where" | "that has"
+_where_statement: "wherin" | "where" | "that has" | "when"
 _and_statement: "also" | "and" | "and also" | "additionally" 
 ?conditional: equality | greater
 
@@ -60,4 +67,4 @@ _less_word: "is less than" | "is smaller than"
 _data: WORD | NUMBER
 %import common.WORD  
 %import common.NUMBER 
-%ignore " "           
+%ignore " "             

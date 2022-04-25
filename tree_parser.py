@@ -15,25 +15,11 @@ def get_comparison_symbol(text):
     if text == "equality":
         return "="
 
-def eval_tree(t):
-    sql_text = "SELECT"
+def get_source(t):
+    source = list(t.find_data("table_name"))
+    return source[0].children[0]
 
-    #-------columns-------#
-    columns = list(t.find_data("selected_columns"))
-    column_list = []
-    if(len(columns) > 0):
-        for column in columns[0].children:
-            column_list.append(column)
-        sql_text += " " + insert_separator(column_list,", ")
-    else:
-        sql_text += " *"
-
-    #-------table source-------#
-    source = list(t.find_data("source"))
-    source = source[0].children[0]
-    sql_text += " FROM " + source 
-
-    #-------conditions-------#
+def get_conditions(t):
     conditions = list(t.find_data("conditions"))
     if(len(conditions) > 0):
         condition_list = []
@@ -46,8 +32,43 @@ def eval_tree(t):
             if(not rhs.isnumeric()):
                 rhs = "'" + rhs + "'"
             condition_list.append(lhs + " " + get_comparison_symbol(condition_type) + " " + rhs)
-        sql_text += " WHERE " + insert_separator(condition_list," and ")
+        return " WHERE " + insert_separator(condition_list," and ")
+    return ""
 
+def eval_tree(t):
+    command_type = t.children[0].data
+    if(command_type == "select"):
+        return eval_select(t)
+    if(command_type == "count"):
+        return eval_count(t)
+
+def eval_count(t):
+    sql_text = "SELECT COUNT(*)"
+    sql_text += " FROM " + get_source(t) 
+    sql_text += get_conditions(t)
+    return sql_text
+
+
+def eval_select(t):
+    sql_text = "SELECT"
+
+    #-------columns-------#
+    columns = list(t.find_data("selected_columns"))
+    column_list = []
+    if(len(columns) > 0):
+        for column in columns[0].children:
+            column_list.append(column)
+        sql_text += " " + insert_separator(column_list,", ")
+    else:
+        sql_text += " *"
+
+
+    #-------table source-------#
+    sql_text += " FROM " + get_source(t) 
+
+    #-------conditions-------#
+    sql_text += get_conditions(t)
+    
     #-------ordering-------#
     order = list(t.find_data("order"))
     if(len(order) > 0):
@@ -57,5 +78,10 @@ def eval_tree(t):
             sql_text += "desc"
         else:
             sql_text += order[0].children[1].data
+
+    #row limit
+    row_limit = list(t.find_data("row_limit"))
+    if(len(row_limit) > 0):
+        sql_text += " LIMIT " + row_limit[0].children[0]
         
     return sql_text

@@ -5,7 +5,7 @@ def run_code(sql_text):
     crsr = connection.cursor()
     crsr.execute(sql_text)
     for row in crsr:
-        print('row = %r' % (row,))
+        print(row)
     connection.commit()
     connection.close()
 
