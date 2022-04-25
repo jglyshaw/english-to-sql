@@ -1,0 +1,1 @@
+from people give me data where age is greater than 12 and weight is greater than 150

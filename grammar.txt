@@ -1,0 +1,63 @@
+start: "-"
+| source _source_first [order]
+| _request_statement _request_first [order]
+| conditions* conditions_first [order]
+| selected_columns*  _request_statement source conditions* [order]
+
+_request_first: "-"
+| source selected_columns* conditions*
+| source conditions* selected_columns*
+| selected_columns* conditions* source
+| selected_columns* source conditions* 
+| conditions* source selected_columns*
+| conditions* selected_columns* source 
+
+_source_first: "-"
+| _request_statement selected_columns* conditions*
+| _request_statement conditions* selected_columns* 
+| selected_columns*  _request_statement conditions*
+
+conditions_first: "-"
+| _request_statement source selected_columns* 
+
+
+//order
+order: _order_statement _data [direction]
+_order_statement: ("ordered by" | "order by" | "organize by") ["column"]
+direction: "ascending" -> asc | "descending" -> desc
+
+
+//request statement
+_request_statement: _verb_statement _row_word
+_row_word: "rows" | "entries" | "data" | "items" | "things" | "stuff" 
+_verb_statement: "give me" | "return" | "fetch" | "i want"
+
+//selected columns
+selected_columns: ("with"|"with the") ("column"|"columns") _data [_and_statement _data]*
+
+
+//source
+source: _from_statement _data_base | "from the" _data_base "database" 
+_from_statement: "from the" | "from" | "from the database"
+_data_base: _data
+
+//condition
+conditions: _where_statement conditional [_and_statement conditional]+
+_where_statement: "wherin" | "where" | "that has"
+_and_statement: "also" | "and" | "and also" | "additionally" 
+?conditional: equality | greater
+
+//conditons
+equality: _data _equal_word _data
+_equal_word: "is" | "is equal to" | "is the same as"
+
+greater: _data _greater_word _data
+_greater_word: "is greater than" | "is more than" | "is larger than"
+
+less: _data _less_word _data
+_less_word: "is less than" | "is smaller than"
+
+_data: WORD | NUMBER
+%import common.WORD  
+%import common.NUMBER 
+%ignore " "           
