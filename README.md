@@ -3,7 +3,7 @@
 
 ## The language that I am parsing is English into SQL statements.
 
-**Notes**
+**Notes**: <br/>
 Each english statement must specifiy which table you want to use and be in the form of a request, question, or action
 Grammar starts out with three different options for types of SQL options: 
 * Select statement: branches into other grammars to organize ordering of possible English, supports limiting rows, ordering, selecting columns, and conditions
