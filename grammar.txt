@@ -1,60 +1,59 @@
-start: select | count
+start: select | count | delete
 
-count: "how many" _row_word ("are in" | "in") table_name conditions*
-|"how many" _row_word "does" table_name "have" conditions*
+count: conditions* "how many" _row_word ("are in" | "in") table_name conditions*
+| conditions* "how many" _row_word "does" table_name "have" conditions*
+| conditions* "how many" _row_word "does the" table_name "table have" conditions*
 
-select: "-"
-| _source_statement _source_first [order]
+delete: _remove_word _row_word _select_source conditions+ 
+| _select_source _remove_word _row_word conditions+ 
+| conditions+ _remove_word _row_word _select_source 
+_remove_word: "delete" | "remove" | "get rid of"
+
+select: _select_source _source_first [order]
 | _request_statement _request_first [order]
 | conditions* conditions_first [order]
-| selected_columns*  _request_statement _source_statement conditions* [order]
+| selected_columns*  _request_statement _select_source conditions* [order]
 
-_request_first: "-"
-| _source_statement selected_columns* conditions*
-| _source_statement conditions* selected_columns*
-| selected_columns* conditions* _source_statement
-| selected_columns* _source_statement conditions* 
-| conditions* _source_statement selected_columns*
-| conditions* selected_columns* _source_statement 
+_request_first: _select_source selected_columns* conditions*
+| _select_source conditions* selected_columns*
+| selected_columns* conditions* _select_source
+| selected_columns* _select_source conditions* 
+| conditions* _select_source selected_columns*
+| conditions* selected_columns* _select_source 
 
-_source_first: "-"
-| _request_statement selected_columns* conditions*
+_source_first: _request_statement selected_columns* conditions*
 | _request_statement conditions* selected_columns* 
 | selected_columns*  _request_statement conditions*
 
-conditions_first: "-"
-| _request_statement _source_statement selected_columns* 
+conditions_first: _request_statement _select_source selected_columns* 
 
-
-//order
+//order "order by age"
 order: _order_statement _data [direction]
 _order_statement: ("ordered by" | "order by" | "organize by") ["column"]
 direction: "ascending" -> asc | "descending" -> desc
 
-
-//request statement
+//request statement "give me data"
 _request_statement: _verb_statement [row_limit] _row_word
 _row_word: "row"["s"] | "entry" | "entries" | "data" | "item"["s"] 
-| "thing"["s"] | "stuff" 
+| "thing"["s"] 
 _verb_statement: "give me" | "return" | "fetch" | "i want" | "get"
 row_limit: NUMBER
 
-//selected columns
+//selected columns "with columns a and b"
 selected_columns: ("with"|"with the") ("column"|"columns") _data [_and_statement _data]*
 
-
-//source
-_source_statement: _from_statement table_name | "from the" table_name "table" 
-_from_statement: "from the" | "from" | "from the table" | "in"
+//select source "from the people table"
+_select_source: _from_statement table_name ["table"] 
+| _from_statement "table" table_name
+_from_statement: "from the" | "from" | "in"
 table_name: WORD
 
-//condition
+//condition "where age is greater than 20"
 conditions: _where_statement conditional [_and_statement conditional]+
 _where_statement: "wherin" | "where" | "that has" | "when"
 _and_statement: "also" | "and" | "and also" | "additionally" 
-?conditional: equality | greater
+?conditional: equality | greater | less
 
-//conditons
 equality: _data _equal_word _data
 _equal_word: "is" | "is equal to" | "is the same as"
 
@@ -64,7 +63,8 @@ _greater_word: "is greater than" | "is more than" | "is larger than"
 less: _data _less_word _data
 _less_word: "is less than" | "is smaller than"
 
+WORD: /\S+/
 _data: WORD | NUMBER
-%import common.WORD  
+
 %import common.NUMBER 
 %ignore " "             
