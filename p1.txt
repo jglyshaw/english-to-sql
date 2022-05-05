@@ -1,1 +1,0 @@
-where gender is male give me data from people order by age
